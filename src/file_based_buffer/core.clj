@@ -7,7 +7,9 @@
 (defprotocol FileBackedBuffer
   (file [b] "Returns the file backing the buffer."))
 
-(deftype FixedTapeBuffer [^QueueFile tape ^java.io.File a-file ^long limit]
+;; blocking
+;; -----------------------------------
+(deftype BlockingTapeBuffer [^QueueFile tape ^java.io.File a-file ^long limit]
   impl/Buffer
   (full? [this]
     (= (.size tape) limit))
@@ -30,22 +32,22 @@
   (file [this]
     a-file))
 
-(defn fixed
+(defn blocking
   ([n]
    (let [tmp-file (clojure.java.io/as-file 
                     (str (System/getProperty "java.io.tmpdir") 
                          "file_based_buffer_"
                          (System/nanoTime)
                          ".tmp"))]
-     (fixed tmp-file n)))
+     (blocking tmp-file n)))
 
   ([file n]
-   (->FixedTapeBuffer (QueueFile. file) file n)))
+   (->BlockingTapeBuffer (QueueFile. file) file n)))
 
 
 (comment
 
-  (def b (fixed 200000))
+  (def b (blocking 200000))
   (def c (chan b))
 
   (println (file b))

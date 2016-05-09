@@ -4,7 +4,7 @@
             [clojure.core.async :refer [go <!! >!! >! <! chan]]))
 
 (deftest buffer
-  (let [buff (file-based-buffer/fixed 10)
+  (let [buff (file-based-buffer/blocking 10)
         ch (chan buff)]
     (>!! ch :hello1)
     (>!! ch :hello2)
