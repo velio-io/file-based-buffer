@@ -1,7 +1,8 @@
 (ns file-based-buffer.core
   (:require [clojure.core.async :refer [go <!! >!! >! <! chan]]
             [clojure.core.async.impl.protocols :as impl]
-            [taoensso.nippy :as nippy])
+            [taoensso.nippy :as nippy]
+            [clojure.tools.logging :as logging])
    (:import [com.squareup.tape QueueFile]))
 
 ;;helpers
@@ -13,11 +14,13 @@
 ;; https://docs.oracle.com/javase/7/docs/api/java/io/File.html#createTempFile(java.lang.String,%20java.lang.String)
 (defn- tmp-file
   []
-  (clojure.java.io/as-file
-    (str (System/getProperty "java.io.tmpdir") 
-         "file_based_buffer_"
-         (System/nanoTime)
-         ".tmp")))
+  (let [f (clojure.java.io/as-file
+            (str (System/getProperty "java.io.tmpdir") 
+                 "file_based_buffer_"
+                 (System/nanoTime)
+                 ".tmp"))]
+    (logging/debug (str "Creating new tmp file: " f))
+    f))
 
 (defprotocol FileBackedBuffer
   (file [b] "Returns the file backing the buffer."))
@@ -67,8 +70,9 @@
       item))
 
   (add!* [this itm]
-    (when (< (.size tape) limit)
-      (.add tape (nippy/freeze itm)))
+    (if (< (.size tape) limit)
+      (.add tape (nippy/freeze itm))
+      (logging/debug (str "Dropping buffer " a-file " reached limit of " limit ". Dropping new item.")))
     this)
 
   clojure.lang.Counted
@@ -100,6 +104,7 @@
 
   (add!* [this itm]
     (when (= (.size tape) limit)
+      (logging/debug (str "Sliding buffer " a-file " reached limit of " limit ". Dropping old item."))
       (.remove tape))
     (.add tape (nippy/freeze itm))
     this)
