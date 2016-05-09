@@ -9,9 +9,12 @@ Provides a file backed core.async buffer for channels.
 ## Usage
 
 ```clojure
+  (:require [file-based-buffer.core :as file-based-buffer)
 
-  (:require [file-based-buffer.core :refer [file-based-buffer])
-
-  (def b (file-based-buffer 200000))
+  ;; also available:
+  ;; --------------------
+  ;; file-based-buffer/dropping
+  ;; file-based-buffer/sliding
+  (def b (file-based-buffer/blocking 200000))
   (def c (chan b))
 ```
