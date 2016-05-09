@@ -128,22 +128,25 @@
 
 (comment
 
-  (def b (blocking 200000))
-  (def c (chan b))
+  ;"Elapsed time: 24539.01738 msecs"  => ~4075 messages / sec
+  ;"Elapsed time: 25168.894044 msecs" => ~3973 messages / sec
+  (def c (chan (sliding 1000)))
+  (time (doseq [i (range 99999)]
+          (>!! c i)))
 
-  (println (file b))
 
+  ;"Elapsed time: 15475.017855 msecs" => ~6461 messages / sec
+  ;"Elapsed time: 14808.937306 msecs" => ~6753 messages / sec
+  (def c (chan (sliding 99999)))
+  (time (doseq [i (range 99999)]
+          (>!! c i)))
+
+  ;"Elapsed time: 10185.868966 msecs" => ~9818 messages / sec
+  ;"Elapsed time: 10930.733745 msecs" => ~9148 messages / sec
+  (def c (chan (sliding 99999)))
+  (time (doseq [i (range (dec 99999))]
+          (<!! c)))
   
-
-  (>!! c (reduce str (range 99999)))
-
-  (count b)
-
-  (<!! c)
-
-  (go (>! c "hello"))
-
-  (clojure.stacktrace/print-cause-trace *e)
   
 
   )
