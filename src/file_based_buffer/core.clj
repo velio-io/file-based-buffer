@@ -4,6 +4,21 @@
             [taoensso.nippy :as nippy])
    (:import [com.squareup.tape QueueFile]))
 
+;;helpers
+
+;; Not using File/createTempFile, because that already creates a file, in which
+;; case QueueFile assumes that the file is already initialised 
+;; (contains proper headers) and fails subsequently.
+;; 
+;; https://docs.oracle.com/javase/7/docs/api/java/io/File.html#createTempFile(java.lang.String,%20java.lang.String)
+(defn- tmp-file
+  []
+  (clojure.java.io/as-file
+    (str (System/getProperty "java.io.tmpdir") 
+         "file_based_buffer_"
+         (System/nanoTime)
+         ".tmp")))
+
 (defprotocol FileBackedBuffer
   (file [b] "Returns the file backing the buffer."))
 
@@ -34,15 +49,76 @@
 
 (defn blocking
   ([n]
-   (let [tmp-file (clojure.java.io/as-file 
-                    (str (System/getProperty "java.io.tmpdir") 
-                         "file_based_buffer_"
-                         (System/nanoTime)
-                         ".tmp"))]
-     (blocking tmp-file n)))
+   (blocking (tmp-file) n))
 
   ([file n]
    (->BlockingTapeBuffer (QueueFile. file) file n)))
+
+;; dropping
+;; -----------------------------------------------
+(deftype DroppingTapeBuffer [^QueueFile tape ^java.io.File a-file ^long limit]
+  impl/Buffer
+  ; always accept puts (never block)
+  (full? [this] false)
+
+  (remove! [this]
+    (let [item (nippy/thaw (.peek tape))]
+      (.remove tape)
+      item))
+
+  (add!* [this itm]
+    (when (< (.size tape) limit)
+      (.add tape (nippy/freeze itm)))
+    this)
+
+  clojure.lang.Counted
+  (count [this]
+    (.size tape))
+
+  FileBackedBuffer
+  (file [this]
+    a-file))
+
+(defn dropping
+  ([n]
+   (dropping (tmp-file) n))
+
+  ([file n]
+   (->DroppingTapeBuffer (QueueFile. file) file n)))
+
+;; sliding
+;; --------------------------------------------
+(deftype SlidingTapeBuffer [^QueueFile tape ^java.io.File a-file ^long limit]
+  impl/Buffer
+  ; always accept puts (never block)
+  (full? [this] false)
+
+  (remove! [this]
+    (let [item (nippy/thaw (.peek tape))]
+      (.remove tape)
+      item))
+
+  (add!* [this itm]
+    (when (= (.size tape) limit)
+      (.remove tape))
+    (.add tape (nippy/freeze itm))
+    this)
+
+  clojure.lang.Counted
+  (count [this]
+    (.size tape))
+
+  FileBackedBuffer
+  (file [this]
+    a-file))
+
+(defn sliding
+  ([n]
+   (sliding (tmp-file) n))
+
+  ([file n]
+   (->SlidingTapeBuffer (QueueFile. file) file n)))
+
 
 
 (comment
