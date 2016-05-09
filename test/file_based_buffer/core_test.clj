@@ -1,10 +1,10 @@
 (ns file-based-buffer.core-test
   (:require [clojure.test :refer :all]
-            [file-based-buffer.core :refer :all]
+            [file-based-buffer.core :as file-based-buffer]
             [clojure.core.async :refer [go <!! >!! >! <! chan]]))
 
 (deftest buffer
-  (let [buff (file-based-buffer 10)
+  (let [buff (file-based-buffer/fixed 10)
         ch (chan buff)]
     (>!! ch :hello1)
     (>!! ch :hello2)
