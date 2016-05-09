@@ -1,4 +1,9 @@
-(defproject file-based-buffer "0.1.0-SNAPSHOT"
+(def revision 
+   (-> (clojure.java.shell/sh "git" "rev-parse" "--short" "HEAD")
+       :out
+       clojure.string/trim))
+
+(defproject file-based-buffer (str "0.1.0-" revision)
   :description "A file backed core.async buffer for channels."
   :url "https://github.com/Velrok/file-based-buffer"
   :license {:name "Eclipse Public License"
