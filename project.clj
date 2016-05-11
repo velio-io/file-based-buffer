@@ -1,4 +1,4 @@
-(defproject file-based-buffer "0.1.1"
+(defproject file-based-buffer "0.1.2"
   :description "A file backed core.async buffer for channels."
   :url "https://github.com/Velrok/file-based-buffer"
   :license {:name "Eclipse Public License"
