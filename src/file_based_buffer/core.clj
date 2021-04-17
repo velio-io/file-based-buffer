@@ -42,6 +42,10 @@
     (.add tape (nippy/freeze itm))
     this)
 
+  (close-buf! [this]
+    (.close tape)
+    this)
+
   clojure.lang.Counted
   (count [this]
     (.size tape))
@@ -74,6 +78,10 @@
       (.add tape (nippy/freeze itm))
       (logging/debug (str "Dropping buffer " a-file " reached limit of " limit ". Dropping new item.")))
     this)
+
+  (close-buf! [this]
+     (.close tape)
+     this)
 
   clojure.lang.Counted
   (count [this]
@@ -108,6 +116,10 @@
       (.remove tape))
     (.add tape (nippy/freeze itm))
     this)
+
+  (close-buf! [this]
+     (.close tape)
+     this)
 
   clojure.lang.Counted
   (count [this]
