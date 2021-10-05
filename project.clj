@@ -7,4 +7,4 @@
                  [org.clojure/tools.logging "0.3.1" :scope "provided"]
                  [org.clojure/core.async "0.2.374" :scope "provided"]
                  [com.squareup/tape "1.2.3"]
-                 [com.taoensso/nippy "2.11.1" :scope "provided"]])
+                 [com.taoensso/nippy "2.13.0" :scope "provided"]])
