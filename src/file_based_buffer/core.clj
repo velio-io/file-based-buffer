@@ -33,13 +33,13 @@
     (= (.size tape) limit))
 
   (remove! [this]
-    (let [item (nippy/thaw (.peek tape))]
+    (let [item (nippy/fast-thaw (.peek tape))]
       (.remove tape)
       item))
 
   (add!* [this itm]
     (assert (not (impl/full? this)) "Can't add to a full buffer")
-    (.add tape (nippy/freeze itm))
+    (.add tape (nippy/fast-freeze itm))
     this)
 
   (close-buf! [this]
@@ -69,13 +69,13 @@
   (full? [this] false)
 
   (remove! [this]
-    (let [item (nippy/thaw (.peek tape))]
+    (let [item (nippy/fast-thaw (.peek tape))]
       (.remove tape)
       item))
 
   (add!* [this itm]
     (if (< (.size tape) limit)
-      (.add tape (nippy/freeze itm))
+      (.add tape (nippy/fast-freeze itm))
       (logging/debug (str "Dropping buffer " a-file " reached limit of " limit ". Dropping new item.")))
     this)
 
@@ -106,7 +106,7 @@
   (full? [this] false)
 
   (remove! [this]
-    (let [item (nippy/thaw (.peek tape))]
+    (let [item (nippy/fast-thaw (.peek tape))]
       (.remove tape)
       item))
 
@@ -114,7 +114,7 @@
     (when (= (.size tape) limit)
       (logging/debug (str "Sliding buffer " a-file " reached limit of " limit ". Dropping old item."))
       (.remove tape))
-    (.add tape (nippy/freeze itm))
+    (.add tape (nippy/fast-freeze itm))
     this)
 
   (close-buf! [this]
